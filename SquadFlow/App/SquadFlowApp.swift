@@ -25,32 +25,3 @@ struct SquadFlowApp: App {
         }
     }
 }
-
-struct RootView: View {
-    @Environment(AppRouter.self) private var router
-    @State private var authViewModel: AuthViewModel
-    private let repository: AuthRepositoryProtocol
-
-    init(repository: AuthRepositoryProtocol) {
-        self.repository = repository
-        _authViewModel = State(initialValue: AuthViewModel(repository: repository))
-    }
-
-    var body: some View {
-        Group {
-            if router.isAuthenticated {
-                VStack(spacing: 20) {
-                    Text("Autenticado")
-                    Button("Cerrar sesión") {
-                        Task { try? await repository.signOut() }
-                    }
-                }
-            } else {
-                AuthView(viewModel: authViewModel)
-            }
-        }
-        .task {
-            await router.listenToAuthState()
-        }
-    }
-}

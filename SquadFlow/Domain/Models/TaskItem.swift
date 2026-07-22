@@ -6,12 +6,31 @@
 //
 
 import Foundation
+import SwiftUI
 
-enum TaskStatus: String, Codable {
+enum TaskStatus: String, Codable, CaseIterable {
     case todo = "todo"
     case inProgress = "in_progress"
     case review = "review"
     case done = "done"
+
+    var displayName: String {
+        switch self {
+        case .todo: "Por hacer"
+        case .inProgress: "En progreso"
+        case .review: "En revisión"
+        case .done: "Completado"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .todo: .gray
+        case .inProgress: .blue
+        case .review: .orange
+        case .done: .green
+        }
+    }
 }
 
 struct TaskItem: Codable, Identifiable {
