@@ -23,9 +23,7 @@ final class AuthViewModel {
     }
 
     var isFormValid: Bool {
-        let emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-        let isValidEmail = (try? emailRegex.wholeMatch(in: email)) != nil
-        return isValidEmail && password.count >= 6
+        AuthValidator.isValidCredentials(email: email, password: password)
     }
 
     func signIn() async {
