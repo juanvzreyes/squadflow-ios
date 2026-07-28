@@ -7,21 +7,18 @@
 
 import SwiftUI
 
-private let defaultWorkspaceId = UUID(uuidString: "11111111-2222-3333-4444-555555555555")!
-
 struct RootView: View {
     @Environment(AppRouter.self) private var router
     @State private var authViewModel: AuthViewModel
-    @State private var taskViewModel: TaskListViewModel
+    @State private var workspaceViewModel: WorkspaceListViewModel
     private let repository: AuthRepositoryProtocol
 
     init(repository: AuthRepositoryProtocol) {
         self.repository = repository
         _authViewModel = State(initialValue: AuthViewModel(repository: repository))
-        _taskViewModel = State(
-            initialValue: TaskListViewModel(
-                repository: TaskRepository(),
-                workspaceId: defaultWorkspaceId
+        _workspaceViewModel = State(
+            initialValue: WorkspaceListViewModel(
+                repository: WorkspaceRepository()
             )
         )
     }
@@ -29,7 +26,10 @@ struct RootView: View {
     var body: some View {
         Group {
             if router.isAuthenticated {
-                TaskListView(viewModel: taskViewModel, authRepository: repository)
+                WorkspaceListView(
+                    viewModel: workspaceViewModel,
+                    authRepository: repository
+                )
             } else {
                 AuthView(viewModel: authViewModel)
             }
