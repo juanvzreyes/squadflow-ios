@@ -11,7 +11,7 @@ struct EmptyStateView: View {
     var body: some View {
         ContentUnavailableView(
             "Sin registros",
-            systemImage: "tray",
+            systemImage: "tray.fill",
             description: Text("No hay registros en este espacio de trabajo")
         )
     }
