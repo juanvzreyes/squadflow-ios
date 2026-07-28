@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Workspace: Codable, Identifiable {
+struct Workspace: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
     let ownerId: UUID?
