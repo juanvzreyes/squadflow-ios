@@ -12,47 +12,48 @@ struct TaskListView: View {
     let authRepository: AuthRepositoryProtocol
 
     var body: some View {
-        NavigationStack {
+
+        Group {
             content
-                .navigationTitle("Tareas")
-                .toolbar { toolbarContent }
-                .task { await viewModel.fetchTasks() }
-                .sheet(isPresented: $viewModel.isShowingCreateForm) {
-                    TaskFormView(taskToEdit: nil) {
-                        title,
-                        description,
-                        status in
-                        await viewModel.createTask(
-                            title: title,
-                            description: description,
-                            status: status
-                        )
-                    }
-                }
-                .sheet(item: $viewModel.taskToEdit) { task in
-                    TaskFormView(taskToEdit: task) {
-                        title,
-                        description,
-                        status in
-                        await viewModel.updateTask(
-                            taskId: task.id,
-                            title: title,
-                            description: description,
-                            status: status
-                        )
-                    }
-                }
-                .alert(
-                    "Error",
-                    isPresented: Binding(
-                        get: { viewModel.errorMessage != nil },
-                        set: { if !$0 { viewModel.errorMessage = nil } }
-                    )
-                ) {
-                    Button("Entendido", role: .cancel) {}
-                } message: {
-                    Text(viewModel.errorMessage ?? "")
-                }
+        }
+        .navigationTitle("Tareas")
+        .toolbar { toolbarContent }
+        .task { await viewModel.fetchTasks() }
+        .sheet(isPresented: $viewModel.isShowingCreateForm) {
+            TaskFormView(taskToEdit: nil) {
+                title,
+                description,
+                status in
+                await viewModel.createTask(
+                    title: title,
+                    description: description,
+                    status: status
+                )
+            }
+        }
+        .sheet(item: $viewModel.taskToEdit) { task in
+            TaskFormView(taskToEdit: task) {
+                title,
+                description,
+                status in
+                await viewModel.updateTask(
+                    taskId: task.id,
+                    title: title,
+                    description: description,
+                    status: status
+                )
+            }
+        }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button("Entendido", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 
