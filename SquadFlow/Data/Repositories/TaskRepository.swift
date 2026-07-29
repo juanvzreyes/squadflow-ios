@@ -75,4 +75,49 @@ final class TaskRepository: TaskRepositoryProtocol {
             .eq("id", value: taskId)
             .execute()
     }
+
+    func taskChangesStream(for workspaceId: UUID) -> AsyncStream<TaskRealtimeAction> {
+        AsyncStream { continuation in
+            let channel = client.channel("tasks-\(workspaceId.uuidString)")
+
+            let changeStream = channel.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "tasks",
+                filter: .eq("workspace_id", value: workspaceId)
+            )
+
+            let listenerTask = Task {
+                try await channel.subscribeWithError()
+
+                for await change in changeStream {
+                    switch change {
+                    case .insert(let action):
+                        if let newTask = try? action.record.decode(as: TaskItem.self) {
+                            continuation.yield(.insert(newTask))
+                        }
+
+                    case .update(let action):
+                        if let updatedTask = try? action.record.decode(as: TaskItem.self) {
+                            continuation.yield(.update(updatedTask))
+                        }
+
+                    case .delete(let action):
+                        struct DeletedRecord: Decodable {
+                            let id: UUID
+                        }
+
+                        if let deleted = try? action.oldRecord.decode(as: DeletedRecord.self) {
+                            continuation.yield(.delete(deleted.id))
+                        }
+                    }
+                }
+            }
+
+            continuation.onTermination = { _ in
+                listenerTask.cancel()
+                Task { await channel.unsubscribe() }
+            }
+        }
+    }
 }
