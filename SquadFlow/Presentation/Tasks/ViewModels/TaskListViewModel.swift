@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -73,6 +74,31 @@ final class TaskListViewModel {
             tasks.removeAll { $0.id == task.id }
         } catch {
             errorMessage = "Error al eliminar: \(error.localizedDescription)"
+        }
+    }
+
+    func listenForRealtimeChanges() async {
+        let stream = repository.taskChangesStream(for: workspaceId)
+
+        for await action in stream {
+            withAnimation {
+                switch action {
+                case .insert(let task):
+                    if !self.tasks.contains(where: { $0.id == task.id }) {
+                        self.tasks.insert(task, at: 0)
+                    }
+
+                case .update(let task):
+                    if let index = self.tasks.firstIndex(where: {
+                        $0.id == task.id
+                    }) {
+                        self.tasks[index] = task
+                    }
+
+                case .delete(let taskId):
+                    self.tasks.removeAll { $0.id == taskId }
+                }
+            }
         }
     }
 }

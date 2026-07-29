@@ -12,13 +12,13 @@ struct TaskListView: View {
     let authRepository: AuthRepositoryProtocol
 
     var body: some View {
-
         Group {
             content
         }
         .navigationTitle("Tareas")
         .toolbar { toolbarContent }
         .task { await viewModel.fetchTasks() }
+        .task { await viewModel.listenForRealtimeChanges() }
         .sheet(isPresented: $viewModel.isShowingCreateForm) {
             TaskFormView(taskToEdit: nil) {
                 title,
