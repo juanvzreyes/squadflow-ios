@@ -7,8 +7,9 @@
 
 import Foundation
 
-protocol WorkspaceRepositoryProtocol {
+protocol WorkspaceRepositoryProtocol: Sendable {
     func fetchWorkspaces() async throws -> [Workspace]
     func createWorkspace(name: String) async throws -> Workspace
     func deleteWorkspace(id: UUID) async throws
+    func fetchWorkspaceMembers(workspaceId: UUID) async throws -> [Profile]
 }
