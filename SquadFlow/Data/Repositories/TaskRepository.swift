@@ -21,19 +21,17 @@ final class TaskRepository: TaskRepositoryProtocol {
             .value
     }
 
-    func createTask(workspaceId: UUID, title: String, description: String?, status: TaskStatus) async throws -> TaskItem {
-        struct CreatePayload: Encodable {
-            let workspace_id: UUID
-            let title: String
-            let description: String?
-            let status: String
-        }
+    func createTask(workspaceId: UUID, title: String, description: String?, status: TaskStatus, assignedTo: UUID?) async throws -> TaskItem {
+        let session = try await client.auth.session
+        let userId = session.user.id
 
-        let payload = CreatePayload(
+        let payload = TaskDTOs.CreatePayload(
             workspace_id: workspaceId,
             title: title,
             description: description,
-            status: status.rawValue
+            status: status.rawValue,
+            created_by: userId,
+            assigned_to: assignedTo
         )
 
         return try await client
@@ -45,17 +43,12 @@ final class TaskRepository: TaskRepositoryProtocol {
             .value
     }
 
-    func updateTask(taskId: UUID, title: String, description: String?, status: TaskStatus) async throws -> TaskItem {
-        struct UpdatePayload: Encodable {
-            let title: String
-            let description: String?
-            let status: String
-        }
-
-        let payload = UpdatePayload(
+    func updateTask(taskId: UUID, title: String, description: String?, status: TaskStatus, assignedTo: UUID?) async throws -> TaskItem {
+        let payload = TaskDTOs.UpdatePayload(
             title: title,
             description: description,
-            status: status.rawValue
+            status: status.rawValue,
+            assigned_to: assignedTo
         )
 
         return try await client
@@ -103,11 +96,7 @@ final class TaskRepository: TaskRepositoryProtocol {
                         }
 
                     case .delete(let action):
-                        struct DeletedRecord: Decodable {
-                            let id: UUID
-                        }
-
-                        if let deleted = try? action.oldRecord.decode(as: DeletedRecord.self) {
+                        if let deleted = try? action.oldRecord.decode(as: TaskDTOs.DeletedRecord.self) {
                             continuation.yield(.delete(deleted.id))
                         }
                     }

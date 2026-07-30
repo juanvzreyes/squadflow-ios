@@ -9,37 +9,36 @@ import SwiftUI
 
 struct TaskFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @Bindable var formViewModel: TaskFormViewModel
     let taskToEdit: TaskItem?
-    let onSave: (String, String?, TaskStatus) async -> Void
-
-    @State private var title: String = ""
-    @State private var description: String = ""
-    @State private var status: TaskStatus = .todo
-    @State private var isSaving = false
-
-    private var isFormValid: Bool {
-        !title.trimmingCharacters(in: .whitespaces).isEmpty
-    }
+    let members: [Profile]
+    let onSave: (String, String?, TaskStatus, UUID?) async -> Void
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Detalles de la tarea") {
-                    TextField("Título de la tarea", text: $title)
+                    TextField("Título de la tarea", text: $formViewModel.title)
                     TextField(
                         "Descripción (opcional)",
-                        text: $description,
+                        text: $formViewModel.description,
                         axis: .vertical
                     )
                     .lineLimit(3...6)
                 }
-                Section("Estado") {
-                    Picker("Estado", selection: $status) {
+                Section("Estado y asignación") {
+                    Picker("Estado", selection: $formViewModel.status) {
                         ForEach(TaskStatus.allCases, id: \.self) { status in
                             Text(status.displayName).tag(status)
                         }
                     }
-                    .pickerStyle(.menu)
+                    
+                    Picker("Asignar a", selection: $formViewModel.assignedTo) {
+                        Text("Sin asignar").tag(UUID?.none)
+                        ForEach(members) { member in
+                            Text(member.username ?? member.fullName ?? "Sin nombre").tag(UUID?.some(member.id))
+                        }
+                    }
                 }
             }
             .navigationTitle(taskToEdit == nil ? "Nueva tarea" : "Editar tarea")
@@ -51,24 +50,23 @@ struct TaskFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") {
                         Task {
-                            isSaving = true
+                            formViewModel.isSaving = true
                             await onSave(
-                                title,
-                                description.isEmpty ? nil : description,
-                                status
+                                formViewModel.title,
+                                formViewModel.description.isEmpty ? nil : formViewModel.description,
+                                formViewModel.status,
+                                formViewModel.assignedTo
                             )
-                            isSaving = false
+                            formViewModel.isSaving = false
                             dismiss()
                         }
                     }
-                    .disabled(!isFormValid || isSaving)
+                    .disabled(!formViewModel.isFormValid || formViewModel.isSaving)
                 }
             }
             .onAppear {
                 if let task = taskToEdit {
-                    title = task.title
-                    description = task.description ?? ""
-                    status = task.status
+                    formViewModel.loadTask(task)
                 }
             }
         }
@@ -76,5 +74,24 @@ struct TaskFormView: View {
 }
 
 #Preview {
-    TaskFormView(taskToEdit: nil) { _, _, _ in }
+    TaskFormView(
+        formViewModel: TaskFormViewModel(),
+        taskToEdit: nil,
+        members: [
+            Profile(
+                id: UUID(),
+                username: "juanvzreyes",
+                fullName: "Juan Reyes",
+                avatarUrl: nil,
+                updatedAt: nil
+            ),
+            Profile(
+                id: UUID(),
+                username: "luismiguel_oficial",
+                fullName: "Luis Miguel",
+                avatarUrl: nil,
+                updatedAt: nil
+            )
+        ]
+    ) { _, _, _, _ in }
 }

@@ -66,4 +66,15 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
             .eq("id", value: id)
             .execute()
     }
+
+    func fetchWorkspaceMembers(workspaceId: UUID) async throws -> [Profile] {
+        let response: [TaskDTOs.MemberResponse] = try await client
+            .from("workspace_members")
+            .select("profiles(id, username, full_name)")
+            .eq("workspace_id", value: workspaceId)
+            .execute()
+            .value
+
+        return response.map { $0.profiles }
+    }
 }
