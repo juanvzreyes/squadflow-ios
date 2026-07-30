@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct TaskListContent: View {
-    let tasks: [TaskItem]
+    let displayItems: [TaskDisplayInfo]
     let onTap: (TaskItem) -> Void
     let onDelete: (TaskItem) -> Void
 
     var body: some View {
         List {
-            ForEach(tasks) { task in
+            ForEach(displayItems, id: \.task.id) { item in
                 TaskRowView(
-                    task: task,
-                    onTap: { onTap(task) },
-                    onDelete: { onDelete(task) }
+                    displayInfo: item,
+                    onTap: { onTap(item.task) },
+                    onDelete: { onDelete(item.task) }
                 )
             }
         }

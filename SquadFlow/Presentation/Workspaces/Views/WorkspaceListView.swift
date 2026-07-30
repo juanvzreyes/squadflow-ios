@@ -21,11 +21,15 @@ struct WorkspaceListView: View {
             .task { await viewModel.fetchWorkspaces() }
             .navigationDestination(for: Workspace.self) { workspace in
                 let taskRepo = TaskRepository()
+                let workspaceRepo = WorkspaceRepository()
                 let taskVM = TaskListViewModel(
-                    repository: taskRepo,
+                    taskRepository: taskRepo,
+                    workspaceRepository: workspaceRepo,
                     workspaceId: workspace.id
                 )
-                TaskListView(viewModel: taskVM, authRepository: authRepository)
+                TaskListView(viewModel: taskVM) {
+                    try? await authRepository.signOut()
+                }
             }
             .sheet(isPresented: $viewModel.isShowingCreateForm) {
                 WorkspaceFormView { name in

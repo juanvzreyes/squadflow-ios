@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct TaskRowView: View {
-    let task: TaskItem
+    let displayInfo: TaskDisplayInfo
     let onTap: () -> Void
     let onDelete: () -> Void
+
+    private var task: TaskItem { displayInfo.task }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -23,13 +25,27 @@ struct TaskRowView: View {
                     .lineLimit(2)
             }
 
-            Text(task.status.displayName.uppercased())
-                .font(.caption2)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(task.status.color.opacity(0.15))
-                .foregroundStyle(task.status.color)
-                .clipShape(Capsule())
+            HStack {
+                StatusBadgeView(
+                    text: task.status.displayName,
+                    color: task.status.color
+                )
+
+                Spacer()
+
+                VStack(alignment: .trailing) {
+                    Text("De: \(displayInfo.creatorName)")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.crop.circle.fill")
+                        Text(displayInfo.assigneeName)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
@@ -45,18 +61,22 @@ struct TaskRowView: View {
 #Preview {
     List {
         TaskRowView(
-            task: TaskItem(
-                id: UUID(),
-                workspaceId: UUID(),
-                title: "Diseñar pantalla de login",
-                description: "Incluir validación de campos y estado de carga",
-                status: .inProgress,
-                assignedTo: nil,
-                createdBy: nil,
-                createdAt: .now
-            ),
-            onTap: {},
-            onDelete: {}
-        )
+            displayInfo: TaskDisplayInfo(
+                task: TaskItem(
+                    id: UUID(),
+                    workspaceId: UUID(),
+                    title: "Diseñar pantalla de login",
+                    description: "Incluir validación de campos y estado de carga",
+                    status: .inProgress,
+                    assignedTo: nil,
+                    createdBy: nil,
+                    createdAt: .now
+                ),
+                assigneeName: "Sin asignar",
+                creatorName: "Desconocido"
+            )
+        ) {
+        } onDelete: {
+        }
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 struct TaskListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Bindable var viewModel: TaskListViewModel
-    let authRepository: AuthRepositoryProtocol
+    let onSignOut: () async -> Void
 
     var body: some View {
         Group {
@@ -21,27 +21,31 @@ struct TaskListView: View {
         .task { await viewModel.fetchTasks() }
         .task { await viewModel.listenForRealtimeChanges() }
         .sheet(isPresented: $viewModel.isShowingCreateForm) {
-            TaskFormView(taskToEdit: nil) {
-                title,
-                description,
-                status in
+            TaskFormView(
+                formViewModel: TaskFormViewModel(),
+                taskToEdit: nil,
+                members: viewModel.members
+            ) { title, description, status, assignedTo in
                 await viewModel.createTask(
                     title: title,
                     description: description,
-                    status: status
+                    status: status,
+                    assignedTo: assignedTo
                 )
             }
         }
         .sheet(item: $viewModel.taskToEdit) { task in
-            TaskFormView(taskToEdit: task) {
-                title,
-                description,
-                status in
+            TaskFormView(
+                formViewModel: TaskFormViewModel(),
+                taskToEdit: task,
+                members: viewModel.members
+            ) { title, description, status, assignedTo in
                 await viewModel.updateTask(
                     taskId: task.id,
                     title: title,
                     description: description,
-                    status: status
+                    status: status,
+                    assignedTo: assignedTo
                 )
             }
         }
@@ -77,7 +81,7 @@ struct TaskListView: View {
             EmptyStateView()
         } else {
             TaskListContent(
-                tasks: viewModel.tasks,
+                displayItems: viewModel.displayItems,
                 onTap: { viewModel.taskToEdit = $0 },
                 onDelete: { task in
                     Task { await viewModel.deleteTask(task: task) }
@@ -90,7 +94,7 @@ struct TaskListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                Task { try? await authRepository.signOut() }
+                Task { await onSignOut() }
             } label: {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
             }
