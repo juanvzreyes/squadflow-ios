@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct TaskListView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @Bindable var viewModel: TaskListViewModel
     let authRepository: AuthRepositoryProtocol
 
     var body: some View {
-
         Group {
             content
         }
         .navigationTitle("Tareas")
         .toolbar { toolbarContent }
         .task { await viewModel.fetchTasks() }
+        .task { await viewModel.listenForRealtimeChanges() }
         .sheet(isPresented: $viewModel.isShowingCreateForm) {
             TaskFormView(taskToEdit: nil) {
                 title,
@@ -54,6 +55,11 @@ struct TaskListView: View {
             Button("Entendido", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                Task { await viewModel.fetchTasks() }
+            }
         }
     }
 
