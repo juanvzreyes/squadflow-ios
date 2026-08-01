@@ -27,8 +27,4 @@ enum TaskDTOs {
     struct DeletedRecord: Decodable {
         let id: UUID
     }
-
-    struct MemberResponse: Codable {
-        let profiles: Profile
-    }
 }

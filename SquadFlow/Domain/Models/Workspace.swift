@@ -10,7 +10,7 @@ import Foundation
 struct Workspace: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
-    let ownerId: UUID?
+    let ownerId: UUID
     let createdAt: Date
 
     enum CodingKeys: String, CodingKey {

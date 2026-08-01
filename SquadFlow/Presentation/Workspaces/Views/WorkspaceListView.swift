@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct WorkspaceListView: View {
+    @Environment(AppRouter.self) private var router
+    @Environment(DependencyContainer.self) private var container
     @Bindable var viewModel: WorkspaceListViewModel
-    let authRepository: AuthRepositoryProtocol
 
     var body: some View {
         NavigationStack {
@@ -20,16 +21,12 @@ struct WorkspaceListView: View {
             .toolbar { toolbarContent }
             .task { await viewModel.fetchWorkspaces() }
             .navigationDestination(for: Workspace.self) { workspace in
-                let taskRepo = TaskRepository()
-                let workspaceRepo = WorkspaceRepository()
                 let taskVM = TaskListViewModel(
-                    taskRepository: taskRepo,
-                    workspaceRepository: workspaceRepo,
+                    taskRepository: container.taskRepository,
+                    workspaceRepository: container.workspaceRepository,
                     workspaceId: workspace.id
                 )
-                TaskListView(viewModel: taskVM) {
-                    try? await authRepository.signOut()
-                }
+                TaskListView(viewModel: taskVM)
             }
             .sheet(isPresented: $viewModel.isShowingCreateForm) {
                 WorkspaceFormView { name in
@@ -61,7 +58,11 @@ struct WorkspaceListView: View {
                 Task { await viewModel.fetchWorkspaces() }
             }
         } else if viewModel.workspaces.isEmpty {
-            EmptyStateView()
+            EmptyStateView(
+                title: "Sin equipos",
+                systemImage: "briefcase.fill",
+                description: "Crea un espacio de trabajo para comenzar"
+            )
         } else {
             WorkspaceListContent(workspaces: viewModel.workspaces) { workspace in
                 Task {
@@ -75,11 +76,10 @@ struct WorkspaceListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
-                Task { try? await authRepository.signOut() }
+                Task { await router.signOut() }
             } label: {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
             }
-
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
@@ -89,5 +89,4 @@ struct WorkspaceListView: View {
             }
         }
     }
-
 }

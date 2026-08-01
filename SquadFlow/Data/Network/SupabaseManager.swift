@@ -8,19 +8,18 @@
 import Foundation
 import Supabase
 
-enum SupabaseConfig {
-    static let url = URL(string: "https://opzmpqvzmcngphfknpxt.supabase.co")!
-    static let key = "sb_publishable_yx2t6BOap-XNEfnnlck7OA_TbCUV6iq"
-}
-
 final class SupabaseManager {
     static let shared = SupabaseManager()
     let client: SupabaseClient
 
     private init() {
+        guard let url = URL(string: Secrets.supabaseURL) else {
+            fatalError("Invalid Supabase URL in Secrets.swift")
+        }
+
         self.client = SupabaseClient(
-            supabaseURL: SupabaseConfig.url,
-            supabaseKey: SupabaseConfig.key,
+            supabaseURL: url,
+            supabaseKey: Secrets.supabaseKey,
             options: SupabaseClientOptions(
                 auth: SupabaseClientOptions.AuthOptions(
                     emitLocalSessionAsInitialSession: true

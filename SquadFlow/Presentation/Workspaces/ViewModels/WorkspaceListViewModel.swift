@@ -19,10 +19,14 @@ final class WorkspaceListViewModel {
     var newWorkspaceName = ""
     var isCreating = false
 
-    private let repository: WorkspaceRepositoryProtocol
+    private let fetchWorkspacesUseCase: FetchWorkspacesUseCase
+    private let createWorkspaceUseCase: CreateWorkspaceUseCase
+    private let deleteWorkspaceUseCase: DeleteWorkspaceUseCase
 
     init(repository: WorkspaceRepositoryProtocol) {
-        self.repository = repository
+        self.fetchWorkspacesUseCase = FetchWorkspacesUseCase(repository: repository)
+        self.createWorkspaceUseCase = CreateWorkspaceUseCase(repository: repository)
+        self.deleteWorkspaceUseCase = DeleteWorkspaceUseCase(repository: repository)
     }
 
     func fetchWorkspaces() async {
@@ -30,7 +34,7 @@ final class WorkspaceListViewModel {
         errorMessage = nil
 
         do {
-            workspaces = try await repository.fetchWorkspaces()
+            workspaces = try await fetchWorkspacesUseCase.execute()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -39,13 +43,8 @@ final class WorkspaceListViewModel {
     }
 
     func createWorkspace(name: String) async {
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty else { return }
-
         do {
-            let workspace = try await repository.createWorkspace(
-                name: trimmedName
-            )
+            let workspace = try await createWorkspaceUseCase.execute(name: name)
             workspaces.insert(workspace, at: 0)
             isShowingCreateForm = false
         } catch {
@@ -55,7 +54,7 @@ final class WorkspaceListViewModel {
 
     func deleteWorkspace(_ workspace: Workspace) async {
         do {
-            try await repository.deleteWorkspace(id: workspace.id)
+            try await deleteWorkspaceUseCase.execute(id: workspace.id)
             workspaces.removeAll { $0.id == workspace.id }
         } catch {
             errorMessage = "Error al eliminar: \(error.localizedDescription)"

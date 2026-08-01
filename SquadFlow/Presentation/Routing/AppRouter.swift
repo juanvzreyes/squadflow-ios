@@ -4,6 +4,7 @@
 //
 //  Created by Juan Adolfo Velazquez Reyes on 20/07/26.
 //
+
 import Foundation
 import SwiftUI
 
@@ -23,5 +24,9 @@ final class AppRouter {
                 self.isAuthenticated = isAuth
             }
         }
+    }
+
+    func signOut() async {
+        try? await repository.signOut()
     }
 }

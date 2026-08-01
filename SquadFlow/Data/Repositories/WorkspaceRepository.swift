@@ -24,12 +24,10 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         let session = try await client.auth.session
         let userId = session.user.id
 
-        struct CreateWorkspacePayload: Encodable {
-            let name: String
-            let owner_id: UUID
-        }
-
-        let payload = CreateWorkspacePayload(name: name, owner_id: userId)
+        let payload = WorkspaceDTOs.CreateWorkspacePayload(
+            name: name,
+            owner_id: userId
+        )
 
         let newWorkspace: Workspace = try await client
             .from("workspaces")
@@ -39,13 +37,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
             .execute()
             .value
 
-        struct CreateMemberPayload: Encodable {
-            let workspace_id: UUID
-            let profile_id: UUID
-            let role: String
-        }
-
-        let memberPayload = CreateMemberPayload(
+        let memberPayload = WorkspaceDTOs.CreateMemberPayload(
             workspace_id: newWorkspace.id,
             profile_id: userId,
             role: "owner"
@@ -68,7 +60,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
     }
 
     func fetchWorkspaceMembers(workspaceId: UUID) async throws -> [Profile] {
-        let response: [TaskDTOs.MemberResponse] = try await client
+        let response: [WorkspaceDTOs.MemberResponse] = try await client
             .from("workspace_members")
             .select("profiles(id, username, full_name)")
             .eq("workspace_id", value: workspaceId)

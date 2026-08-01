@@ -90,7 +90,6 @@ struct AuthView: View {
 }
 
 #Preview {
-    let repository = AuthRepository()
-    let viewModel = AuthViewModel(repository: repository)
+    let viewModel = AuthViewModel(repository: MockAuthRepository())
     AuthView(viewModel: viewModel)
 }
