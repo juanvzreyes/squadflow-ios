@@ -16,10 +16,12 @@ final class AuthViewModel {
     var isLoading = false
     var errorMessage: String?
 
-    private let repository: AuthRepositoryProtocol
+    private let signInUseCase: SignInUseCase
+    private let signUpUseCase: SignUpUseCase
 
     init(repository: AuthRepositoryProtocol) {
-        self.repository = repository
+        self.signInUseCase = SignInUseCase(repository: repository)
+        self.signUpUseCase = SignUpUseCase(repository: repository)
     }
 
     var isFormValid: Bool {
@@ -33,7 +35,7 @@ final class AuthViewModel {
         errorMessage = nil
 
         do {
-            try await repository.signIn(email: email, password: password)
+            try await signInUseCase.execute(email: email, password: password)
         } catch {
             errorMessage = "El correo o la contraseña son incorrectos."
         }
@@ -48,7 +50,7 @@ final class AuthViewModel {
         errorMessage = nil
 
         do {
-            try await repository.signUp(email: email, password: password)
+            try await signUpUseCase.execute(email: email, password: password)
         } catch {
             errorMessage = error.localizedDescription
         }
