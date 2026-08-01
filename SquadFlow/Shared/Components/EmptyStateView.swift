@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct EmptyStateView: View {
+    var title: String = "Sin registros"
+    var systemImage: String = "tray.fill"
+    var description: String = "No hay registros en este espacio de trabajo"
+
     var body: some View {
         ContentUnavailableView(
-            "Sin registros",
-            systemImage: "tray.fill",
-            description: Text("No hay registros en este espacio de trabajo")
+            title,
+            systemImage: systemImage,
+            description: Text(description)
         )
     }
 }
