@@ -9,19 +9,21 @@ import SwiftUI
 
 @main
 struct SquadFlowApp: App {
-    @State private var repository = AuthRepository()
+    @State private var container: DependencyContainer
     @State private var router: AppRouter
 
     init() {
-        let repo = AuthRepository()
-        _repository = State(initialValue: repo)
-        _router = State(initialValue: AppRouter(repository: repo))
+        let container = DependencyContainer()
+        let router = AppRouter(repository: container.authRepository)
+        _container = State(initialValue: container)
+        _router = State(initialValue: router)
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(repository: repository)
+            RootView()
                 .environment(router)
+                .environment(container)
         }
     }
 }

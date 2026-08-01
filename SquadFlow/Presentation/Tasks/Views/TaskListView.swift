@@ -9,8 +9,8 @@ import SwiftUI
 
 struct TaskListView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(AppRouter.self) private var router
     @Bindable var viewModel: TaskListViewModel
-    let onSignOut: () async -> Void
 
     var body: some View {
         Group {
@@ -94,7 +94,7 @@ struct TaskListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                Task { await onSignOut() }
+                Task { await router.signOut() }
             } label: {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
             }

@@ -9,29 +9,30 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppRouter.self) private var router
-    @State private var authViewModel: AuthViewModel
-    @State private var workspaceViewModel: WorkspaceListViewModel
-    private let repository: AuthRepositoryProtocol
-
-    init(repository: AuthRepositoryProtocol) {
-        self.repository = repository
-        _authViewModel = State(initialValue: AuthViewModel(repository: repository))
-        _workspaceViewModel = State(
-            initialValue: WorkspaceListViewModel(
-                repository: WorkspaceRepository()
-            )
-        )
-    }
+    @Environment(DependencyContainer.self) private var container
+    @State private var authViewModel: AuthViewModel?
+    @State private var workspaceViewModel: WorkspaceListViewModel?
 
     var body: some View {
         Group {
             if router.isAuthenticated {
-                WorkspaceListView(
-                    viewModel: workspaceViewModel,
-                    authRepository: repository
-                )
+                if let workspaceViewModel {
+                    WorkspaceListView(viewModel: workspaceViewModel)
+                }
             } else {
-                AuthView(viewModel: authViewModel)
+                if let authViewModel {
+                    AuthView(viewModel: authViewModel)
+                }
+            }
+        }
+        .onAppear {
+            if authViewModel == nil {
+                authViewModel = AuthViewModel(repository: container.authRepository)
+            }
+            if workspaceViewModel == nil {
+                workspaceViewModel = WorkspaceListViewModel(
+                    repository: container.workspaceRepository
+                )
             }
         }
         .task {
