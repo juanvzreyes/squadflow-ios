@@ -10,7 +10,10 @@ import SwiftUI
 struct TaskListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AppRouter.self) private var router
+    @Environment(DependencyContainer.self) private var container
     @Bindable var viewModel: TaskListViewModel
+
+    @State private var isShowingMembersSheet = false
 
     var body: some View {
         Group {
@@ -48,6 +51,17 @@ struct TaskListView: View {
                     assignedTo: assignedTo
                 )
             }
+        }
+        .sheet(isPresented: $isShowingMembersSheet) {
+            WorkspaceMembersView(
+                viewModel: WorkspaceMembersViewModel(
+                    members: viewModel.members,
+                    workspaceId: viewModel.workspaceId,
+                    repository: container.workspaceRepository,
+                    onMemberAdded: { viewModel.addMember($0) }
+                )
+            )
+            .presentationDetents([.medium, .large])
         }
         .alert(
             "Error",
@@ -97,6 +111,13 @@ struct TaskListView: View {
                 Task { await router.signOut() }
             } label: {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                isShowingMembersSheet = true
+            } label: {
+                Image(systemName: "person.2.badge.plus")
             }
         }
         ToolbarItem(placement: .topBarTrailing) {
