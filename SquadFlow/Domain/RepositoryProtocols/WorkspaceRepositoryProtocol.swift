@@ -15,4 +15,5 @@ protocol WorkspaceRepositoryProtocol: Sendable {
     func inviteUserByUsername(workspaceId: UUID, username: String) async throws -> Profile
     func searchProfiles(query: String) async throws -> [Profile]
     func addMemberToWorkspace(workspaceId: UUID, profileId: UUID) async throws
+    func removeMemberFromWorkspace(workspaceId: UUID, profileId: UUID) async throws
 }

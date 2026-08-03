@@ -119,4 +119,15 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
             .insert(payload)
             .execute()
     }
+
+    func removeMemberFromWorkspace(workspaceId: UUID, profileId: UUID) async throws {
+        try await client
+            .from("workspace_members")
+            .delete()
+            .eq("workspace_id", value: workspaceId)
+            .eq("profile_id", value: profileId)
+            .select()
+            .single()
+            .execute()
+    }
 }

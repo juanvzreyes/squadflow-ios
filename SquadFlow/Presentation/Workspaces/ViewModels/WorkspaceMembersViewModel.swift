@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Supabase
 
 @MainActor
 @Observable
@@ -15,6 +16,7 @@ final class WorkspaceMembersViewModel {
     var searchResults: [Profile] = []
     var inviteErrorMessage: String?
     var isSearching = false
+    var currentUserId: UUID?
 
     private let repository: WorkspaceRepositoryProtocol
     private let inviteUseCase: CreateMemberInvitationUseCase
@@ -33,6 +35,15 @@ final class WorkspaceMembersViewModel {
         self.repository = repository
         self.inviteUseCase = CreateMemberInvitationUseCase(repository: repository)
         self.onMemberAdded = onMemberAdded
+    }
+    
+    func loadCurrentUser() async {
+        do {
+            let session = try await SupabaseManager.shared.client.auth.session
+            currentUserId = session.user.id
+        } catch {
+            print("Error obteniendo usuario actual")
+        }
     }
 
     // MARK: - Búsqueda con debounce
@@ -87,6 +98,28 @@ final class WorkspaceMembersViewModel {
             onMemberAdded?(profile)
         } catch {
             inviteErrorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Eliminación
+
+    func removeMember(profile: Profile) async {
+        let backupMembers = members
+
+        withAnimation {
+            members.removeAll { $0.id == profile.id }
+        }
+
+        do {
+            try await repository.removeMemberFromWorkspace(
+                workspaceId: workspaceId,
+                profileId: profile.id
+            )
+        } catch {
+            withAnimation {
+                members = backupMembers
+            }
+            inviteErrorMessage = "No tienes permisos para eliminar a este miembro del equipo"
         }
     }
 }

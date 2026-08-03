@@ -137,7 +137,21 @@ struct WorkspaceMembersView: View {
 
                     Spacer()
                 }
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    if member.id != viewModel.currentUserId {
+                        Button(role: .destructive) {
+                            Task {
+                                await viewModel.removeMember(profile: member)
+                            }
+                        } label: {
+                            Label("Eliminar", systemImage: "trash")
+                        }
+                    }
+                }
             }
+        }
+        .task {
+            await viewModel.loadCurrentUser()
         }
     }
 }
