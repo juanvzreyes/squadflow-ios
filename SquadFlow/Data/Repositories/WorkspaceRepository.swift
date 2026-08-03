@@ -40,7 +40,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         let memberPayload = WorkspaceDTOs.CreateMemberPayload(
             workspace_id: newWorkspace.id,
             profile_id: userId,
-            role: "owner"
+            role: .owner
         )
 
         try await client
@@ -86,7 +86,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         let payload = WorkspaceDTOs.CreateMemberPayload(
             workspace_id: workspaceId,
             profile_id: profile.id,
-            role: "member"
+            role: .member
         )
 
         try await client
@@ -111,7 +111,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         let payload = WorkspaceDTOs.CreateMemberPayload(
             workspace_id: workspaceId,
             profile_id: profileId,
-            role: "member"
+            role: .member
         )
 
         try await client
