@@ -69,4 +69,54 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
 
         return response.map { $0.profiles }
     }
+
+    func inviteUserByUsername(workspaceId: UUID, username: String) async throws -> Profile {
+        let profiles: [Profile] = try await client
+            .from("profiles")
+            .select()
+            .eq("username", value: username)
+            .limit(1)
+            .execute()
+            .value
+
+        guard let profile = profiles.first else {
+            throw InvitationError.userNotFound(username)
+        }
+
+        let payload = WorkspaceDTOs.CreateMemberPayload(
+            workspace_id: workspaceId,
+            profile_id: profile.id,
+            role: "member"
+        )
+
+        try await client
+            .from("workspace_members")
+            .insert(payload)
+            .execute()
+
+        return profile
+    }
+
+    func searchProfiles(query: String) async throws -> [Profile] {
+        try await client
+            .from("profiles")
+            .select()
+            .ilike("username", pattern: "\(query)%")
+            .limit(10)
+            .execute()
+            .value
+    }
+
+    func addMemberToWorkspace(workspaceId: UUID, profileId: UUID) async throws {
+        let payload = WorkspaceDTOs.CreateMemberPayload(
+            workspace_id: workspaceId,
+            profile_id: profileId,
+            role: "member"
+        )
+
+        try await client
+            .from("workspace_members")
+            .insert(payload)
+            .execute()
+    }
 }
