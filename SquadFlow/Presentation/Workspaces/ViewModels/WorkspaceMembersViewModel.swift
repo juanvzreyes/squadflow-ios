@@ -18,8 +18,9 @@ final class WorkspaceMembersViewModel {
     var isSearching = false
     var currentUserId: UUID?
 
-    private let repository: WorkspaceRepositoryProtocol
     private let inviteUseCase: CreateMemberInvitationUseCase
+    private let searchProfilesUseCase: SearchProfilesUseCase
+    private let removeMemberUseCase: RemoveMemberFromWorkspaceUseCase
     private let workspaceId: UUID
     private let onMemberAdded: ((Profile) -> Void)?
     private var searchTask: Task<Void, Never>?
@@ -32,8 +33,9 @@ final class WorkspaceMembersViewModel {
     ) {
         self.members = members
         self.workspaceId = workspaceId
-        self.repository = repository
         self.inviteUseCase = CreateMemberInvitationUseCase(repository: repository)
+        self.searchProfilesUseCase = SearchProfilesUseCase(repository: repository)
+        self.removeMemberUseCase = RemoveMemberFromWorkspaceUseCase(repository: repository)
         self.onMemberAdded = onMemberAdded
     }
     
@@ -69,11 +71,10 @@ final class WorkspaceMembersViewModel {
 
     private func performSearch(query: String) async {
         do {
-            let results = try await repository.searchProfiles(query: query)
+            let results = try await searchProfilesUseCase.execute(query: query, currentMembers: members)
             guard !Task.isCancelled else { return }
 
-            let memberIds = Set(members.map(\.id))
-            searchResults = results.filter { !memberIds.contains($0.id) }
+            searchResults = results
         } catch {
             guard !Task.isCancelled else { return }
             searchResults = []
@@ -111,7 +112,7 @@ final class WorkspaceMembersViewModel {
         }
 
         do {
-            try await repository.removeMemberFromWorkspace(
+            try await removeMemberUseCase.execute(
                 workspaceId: workspaceId,
                 profileId: profile.id
             )
