@@ -83,24 +83,11 @@ struct WorkspaceMembersView: View {
                             searchText = ""
                         }
                     } label: {
-                        HStack {
-                            Image(systemName: "person.badge.plus")
-                                .foregroundStyle(.blue)
-
-                            VStack(alignment: .leading) {
-                                Text(profile.username ?? "Sin usuario")
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-
-                                if let fullName = profile.fullName {
-                                    Text(fullName)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-
-                            Spacer()
-
+                        ProfileRowView(
+                            profile: profile,
+                            iconName: "person.badge.plus",
+                            iconColor: .blue
+                        ) {
                             Text("Agregar")
                                 .font(.subheadline)
                                 .foregroundStyle(.blue)
@@ -119,23 +106,12 @@ struct WorkspaceMembersView: View {
     private var membersSection: some View {
         Section("Miembros actuales (\(viewModel.members.count))") {
             ForEach(viewModel.members) { member in
-                HStack {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-
-                    VStack(alignment: .leading) {
-                        Text(member.username ?? "Sin usuario")
-                            .font(.headline)
-
-                        if let fullName = member.fullName {
-                            Text(fullName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Spacer()
+                ProfileRowView(
+                    profile: member,
+                    iconName: "person.crop.circle.fill",
+                    iconColor: .secondary
+                ) {
+                    EmptyView()
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                     if member.id != viewModel.currentUserId {
