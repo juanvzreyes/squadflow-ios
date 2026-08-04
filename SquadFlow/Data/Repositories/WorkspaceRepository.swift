@@ -70,7 +70,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         return response.map { $0.profiles }
     }
 
-    func inviteUserByUsername(workspaceId: UUID, username: String) async throws -> Profile {
+    func getProfileByUsername(username: String) async throws -> Profile? {
         let profiles: [Profile] = try await client
             .from("profiles")
             .select()
@@ -79,22 +79,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
             .execute()
             .value
 
-        guard let profile = profiles.first else {
-            throw InvitationError.userNotFound(username)
-        }
-
-        let payload = WorkspaceDTOs.CreateMemberPayload(
-            workspace_id: workspaceId,
-            profile_id: profile.id,
-            role: .member
-        )
-
-        try await client
-            .from("workspace_members")
-            .insert(payload)
-            .execute()
-
-        return profile
+        return profiles.first
     }
 
     func searchProfiles(query: String) async throws -> [Profile] {
