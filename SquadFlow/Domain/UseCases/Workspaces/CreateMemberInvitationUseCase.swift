@@ -53,9 +53,15 @@ struct CreateMemberInvitationUseCase {
             throw InvitationError.alreadyMember
         }
 
-        return try await repository.inviteUserByUsername(
+        guard let profile = try await repository.getProfileByUsername(username: trimmed) else {
+            throw InvitationError.userNotFound(username)
+        }
+
+        try await repository.addMemberToWorkspace(
             workspaceId: workspaceId,
-            username: trimmed
+            profileId: profile.id
         )
+        
+        return profile
     }
 }
