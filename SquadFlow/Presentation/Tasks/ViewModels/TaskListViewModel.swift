@@ -18,13 +18,13 @@ final class TaskListViewModel {
     var errorMessage: String?
     var isShowingCreateForm = false
     var taskToEdit: TaskItem?
+    let workspaceId: UUID
 
     private let fetchTasksUseCase: FetchTasksUseCase
     private let createTaskUseCase: CreateTaskUseCase
     private let updateTaskUseCase: UpdateTaskUseCase
     private let deleteTaskUseCase: DeleteTaskUseCase
     private let observeTaskChangesUseCase: ObserveTaskChangesUseCase
-    private let workspaceId: UUID
 
     init(taskRepository: TaskRepositoryProtocol, workspaceRepository: WorkspaceRepositoryProtocol, workspaceId: UUID) {
         self.fetchTasksUseCase = FetchTasksUseCase(taskRepository: taskRepository, workspaceRepository: workspaceRepository)
@@ -101,6 +101,13 @@ final class TaskListViewModel {
         } catch {
             errorMessage = "Error al eliminar: \(error.localizedDescription)"
         }
+    }
+
+    // MARK: - Members
+
+    func addMember(_ member: Profile) {
+        members.append(member)
+        refreshDisplayItems()
     }
 
     // MARK: - Realtime

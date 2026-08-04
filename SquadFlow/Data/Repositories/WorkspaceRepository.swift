@@ -40,7 +40,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
         let memberPayload = WorkspaceDTOs.CreateMemberPayload(
             workspace_id: newWorkspace.id,
             profile_id: userId,
-            role: "owner"
+            role: .owner
         )
 
         try await client
@@ -68,5 +68,51 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
             .value
 
         return response.map { $0.profiles }
+    }
+
+    func getProfileByUsername(username: String) async throws -> Profile? {
+        let profiles: [Profile] = try await client
+            .from("profiles")
+            .select()
+            .eq("username", value: username)
+            .limit(1)
+            .execute()
+            .value
+
+        return profiles.first
+    }
+
+    func searchProfiles(query: String) async throws -> [Profile] {
+        try await client
+            .from("profiles")
+            .select()
+            .ilike("username", pattern: "\(query)%")
+            .limit(10)
+            .execute()
+            .value
+    }
+
+    func addMemberToWorkspace(workspaceId: UUID, profileId: UUID) async throws {
+        let payload = WorkspaceDTOs.CreateMemberPayload(
+            workspace_id: workspaceId,
+            profile_id: profileId,
+            role: .member
+        )
+
+        try await client
+            .from("workspace_members")
+            .insert(payload)
+            .execute()
+    }
+
+    func removeMemberFromWorkspace(workspaceId: UUID, profileId: UUID) async throws {
+        try await client
+            .from("workspace_members")
+            .delete()
+            .eq("workspace_id", value: workspaceId)
+            .eq("profile_id", value: profileId)
+            .select()
+            .single()
+            .execute()
     }
 }
