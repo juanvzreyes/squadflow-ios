@@ -11,6 +11,7 @@ struct WorkspaceListView: View {
     @Environment(AppRouter.self) private var router
     @Environment(DependencyContainer.self) private var container
     @Bindable var viewModel: WorkspaceListViewModel
+    @State private var formViewModel = WorkspaceFormViewModel()
 
     var body: some View {
         NavigationStack {
@@ -29,9 +30,12 @@ struct WorkspaceListView: View {
                 TaskListView(viewModel: taskVM)
             }
             .sheet(isPresented: $viewModel.isShowingCreateForm) {
-                WorkspaceFormView { name in
+                WorkspaceFormView(formViewModel: formViewModel) { name in
                     await viewModel.createWorkspace(name: name)
                 }
+            }
+            .onChange(of: viewModel.isShowingCreateForm) { _, isShowing in
+                if !isShowing { formViewModel.reset() }
             }
             .alert(
                 "Error",
@@ -47,7 +51,7 @@ struct WorkspaceListView: View {
         }
     }
 
-    // MARK: - Estados
+    // MARK: - States
 
     @ViewBuilder
     private var content: some View {
@@ -74,13 +78,6 @@ struct WorkspaceListView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                Task { await router.signOut() }
-            } label: {
-                Image(systemName: "rectangle.portrait.and.arrow.right")
-            }
-        }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 viewModel.isShowingCreateForm = true

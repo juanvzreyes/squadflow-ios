@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import Supabase
 
 @MainActor
 @Observable
@@ -16,7 +15,7 @@ final class WorkspaceMembersViewModel {
     var searchResults: [Profile] = []
     var inviteErrorMessage: String?
     var isSearching = false
-    var currentUserId: UUID?
+    let currentUserId: UUID?
 
     private let inviteUseCase: CreateMemberInvitationUseCase
     private let searchProfilesUseCase: SearchProfilesUseCase
@@ -28,27 +27,20 @@ final class WorkspaceMembersViewModel {
     init(
         members: [Profile],
         workspaceId: UUID,
+        currentUserId: UUID?,
         repository: WorkspaceRepositoryProtocol,
         onMemberAdded: ((Profile) -> Void)? = nil
     ) {
         self.members = members
         self.workspaceId = workspaceId
+        self.currentUserId = currentUserId
         self.inviteUseCase = CreateMemberInvitationUseCase(repository: repository)
         self.searchProfilesUseCase = SearchProfilesUseCase(repository: repository)
         self.removeMemberUseCase = RemoveMemberFromWorkspaceUseCase(repository: repository)
         self.onMemberAdded = onMemberAdded
     }
-    
-    func loadCurrentUser() async {
-        do {
-            let session = try await SupabaseManager.shared.client.auth.session
-            currentUserId = session.user.id
-        } catch {
-            print("Error obteniendo usuario actual")
-        }
-    }
 
-    // MARK: - Búsqueda con debounce
+    // MARK: - Searchable with debounce
 
     func updateSearch(query: String) {
         searchTask?.cancel()
@@ -73,7 +65,6 @@ final class WorkspaceMembersViewModel {
         do {
             let results = try await searchProfilesUseCase.execute(query: query, currentMembers: members)
             guard !Task.isCancelled else { return }
-
             searchResults = results
         } catch {
             guard !Task.isCancelled else { return }
@@ -82,7 +73,7 @@ final class WorkspaceMembersViewModel {
         isSearching = false
     }
 
-    // MARK: - Invitación
+    // MARK: - Invitation
 
     func inviteMember(profile: Profile) async {
         inviteErrorMessage = nil
@@ -101,8 +92,8 @@ final class WorkspaceMembersViewModel {
             inviteErrorMessage = error.localizedDescription
         }
     }
-    
-    // MARK: - Eliminación
+
+    // MARK: - Remove
 
     func removeMember(profile: Profile) async {
         let backupMembers = members

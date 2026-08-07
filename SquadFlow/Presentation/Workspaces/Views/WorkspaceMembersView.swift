@@ -126,8 +126,5 @@ struct WorkspaceMembersView: View {
                 }
             }
         }
-        .task {
-            await viewModel.loadCurrentUser()
-        }
     }
 }
