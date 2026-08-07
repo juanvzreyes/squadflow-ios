@@ -18,13 +18,21 @@ final class TaskListViewModel {
     var errorMessage: String?
     var isShowingCreateForm = false
     var taskToEdit: TaskItem?
+    var isShowingMembersSheet = false
     let workspaceId: UUID
+
+    // MARK: - Sub-ViewModels (owned)
+
+    let createFormViewModel = TaskFormViewModel()
+    let editFormViewModel = TaskFormViewModel()
+    private(set) var membersViewModel: WorkspaceMembersViewModel?
 
     private let fetchTasksUseCase: FetchTasksUseCase
     private let createTaskUseCase: CreateTaskUseCase
     private let updateTaskUseCase: UpdateTaskUseCase
     private let deleteTaskUseCase: DeleteTaskUseCase
     private let observeTaskChangesUseCase: ObserveTaskChangesUseCase
+    private let workspaceRepository: WorkspaceRepositoryProtocol
 
     init(taskRepository: TaskRepositoryProtocol, workspaceRepository: WorkspaceRepositoryProtocol, workspaceId: UUID) {
         self.fetchTasksUseCase = FetchTasksUseCase(taskRepository: taskRepository, workspaceRepository: workspaceRepository)
@@ -32,7 +40,22 @@ final class TaskListViewModel {
         self.updateTaskUseCase = UpdateTaskUseCase(repository: taskRepository)
         self.deleteTaskUseCase = DeleteTaskUseCase(repository: taskRepository)
         self.observeTaskChangesUseCase = ObserveTaskChangesUseCase(repository: taskRepository)
+        self.workspaceRepository = workspaceRepository
         self.workspaceId = workspaceId
+    }
+
+    func prepareMembersViewModel(currentUserId: UUID?) {
+        if membersViewModel == nil {
+            membersViewModel = WorkspaceMembersViewModel(
+                members: members,
+                workspaceId: workspaceId,
+                currentUserId: currentUserId,
+                repository: workspaceRepository,
+                onMemberAdded: { [weak self] profile in
+                    self?.addMember(profile)
+                }
+            )
+        }
     }
 
     // MARK: - Display Mapping
