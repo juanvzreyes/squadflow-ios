@@ -12,4 +12,5 @@ protocol AuthRepositoryProtocol: Sendable {
     func signIn(email: String, password: String) async throws
     func signOut() async throws
     func authStateStream() -> AsyncStream<Bool>
+    func currentUserId() async -> UUID?
 }
