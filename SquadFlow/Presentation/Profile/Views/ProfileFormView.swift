@@ -9,11 +9,8 @@ import SwiftUI
 
 struct ProfileFormView: View {
     @Environment(\.dismiss) private var dismiss
-    @Bindable var viewModel: ProfileViewModel
-
-    private var isFormValid: Bool {
-        viewModel.editUsername.trimmingCharacters(in: .whitespaces).count >= 3
-    }
+    @Bindable var formViewModel: ProfileFormViewModel
+    let onSave: () async -> Void
 
     var body: some View {
         NavigationStack {
@@ -22,9 +19,9 @@ struct ProfileFormView: View {
                     HStack {
                         Spacer()
                         AvatarPickerView(
-                            editAvatarImage: $viewModel.editAvatarImage,
-                            avatarRemoved: $viewModel.avatarRemoved,
-                            currentAvatarUrl: viewModel.profile?.avatarUrl
+                            editAvatarImage: $formViewModel.avatarImage,
+                            avatarRemoved: $formViewModel.avatarRemoved,
+                            currentAvatarUrl: formViewModel.currentAvatarUrl
                         )
                         Spacer()
                     }
@@ -34,11 +31,11 @@ struct ProfileFormView: View {
                 Section("Información personal") {
                     TextField(
                         "Nombre de usuario",
-                        text: $viewModel.editUsername
+                        text: $formViewModel.username
                     )
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
-                    TextField("Nombre completo", text: $viewModel.editFullName)
+                    TextField("Nombre completo", text: $formViewModel.fullName)
                 }
             }
             .navigationTitle("Editar perfil")
@@ -49,13 +46,10 @@ struct ProfileFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") {
-                        Task { await viewModel.updateProfile() }
+                        Task { await onSave() }
                     }
-                    .disabled(!isFormValid || viewModel.isSaving)
+                    .disabled(!formViewModel.isFormValid || formViewModel.isSaving)
                 }
-            }
-            .onAppear {
-                viewModel.prepareEditForm()
             }
         }
     }
