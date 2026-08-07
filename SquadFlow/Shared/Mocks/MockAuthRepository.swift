@@ -17,4 +17,8 @@ final class MockAuthRepository: AuthRepositoryProtocol {
             continuation.yield(false)
         }
     }
+    
+    func currentUserId() async -> UUID? {
+        return UUID()
+    }
 }
