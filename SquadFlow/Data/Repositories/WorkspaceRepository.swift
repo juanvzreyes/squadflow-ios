@@ -62,7 +62,7 @@ final class WorkspaceRepository: WorkspaceRepositoryProtocol {
     func fetchWorkspaceMembers(workspaceId: UUID) async throws -> [Profile] {
         let response: [WorkspaceDTOs.MemberResponse] = try await client
             .from("workspace_members")
-            .select("profiles(id, username, full_name)")
+            .select("profiles(id, username, full_name, avatar_url)")
             .eq("workspace_id", value: workspaceId)
             .execute()
             .value
