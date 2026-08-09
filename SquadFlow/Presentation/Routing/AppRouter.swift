@@ -12,6 +12,7 @@ import SwiftUI
 @Observable
 final class AppRouter {
     var isAuthenticated = false
+    var currentUserId: UUID?
     private let repository: AuthRepositoryProtocol
 
     init(repository: AuthRepositoryProtocol) {
@@ -22,6 +23,11 @@ final class AppRouter {
         for await isAuth in repository.authStateStream() {
             withAnimation {
                 self.isAuthenticated = isAuth
+            }
+            if isAuth {
+                currentUserId = await repository.currentUserId()
+            } else {
+                currentUserId = nil
             }
         }
     }

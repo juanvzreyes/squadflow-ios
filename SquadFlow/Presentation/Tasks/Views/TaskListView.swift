@@ -10,10 +10,7 @@ import SwiftUI
 struct TaskListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AppRouter.self) private var router
-    @Environment(DependencyContainer.self) private var container
     @Bindable var viewModel: TaskListViewModel
-
-    @State private var isShowingMembersSheet = false
 
     var body: some View {
         Group {
@@ -24,8 +21,9 @@ struct TaskListView: View {
         .task { await viewModel.fetchTasks() }
         .task { await viewModel.listenForRealtimeChanges() }
         .sheet(isPresented: $viewModel.isShowingCreateForm) {
+            let formVM = viewModel.createFormViewModel
             TaskFormView(
-                formViewModel: TaskFormViewModel(),
+                formViewModel: formVM,
                 taskToEdit: nil,
                 members: viewModel.members
             ) { title, description, status, assignedTo in
@@ -36,10 +34,11 @@ struct TaskListView: View {
                     assignedTo: assignedTo
                 )
             }
+            .onDisappear { viewModel.createFormViewModel.reset() }
         }
         .sheet(item: $viewModel.taskToEdit) { task in
             TaskFormView(
-                formViewModel: TaskFormViewModel(),
+                formViewModel: viewModel.editFormViewModel,
                 taskToEdit: task,
                 members: viewModel.members
             ) { title, description, status, assignedTo in
@@ -52,16 +51,11 @@ struct TaskListView: View {
                 )
             }
         }
-        .sheet(isPresented: $isShowingMembersSheet) {
-            WorkspaceMembersView(
-                viewModel: WorkspaceMembersViewModel(
-                    members: viewModel.members,
-                    workspaceId: viewModel.workspaceId,
-                    repository: container.workspaceRepository,
-                    onMemberAdded: { viewModel.addMember($0) }
-                )
-            )
-            .presentationDetents([.medium, .large])
+        .sheet(isPresented: $viewModel.isShowingMembersSheet) {
+            if let membersVM = viewModel.membersViewModel {
+                WorkspaceMembersView(viewModel: membersVM)
+                    .presentationDetents([.medium, .large])
+            }
         }
         .alert(
             "Error",
@@ -81,7 +75,7 @@ struct TaskListView: View {
         }
     }
 
-    // MARK: - Estados
+    // MARK: - States
 
     @ViewBuilder
     private var content: some View {
@@ -108,14 +102,8 @@ struct TaskListView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                Task { await router.signOut() }
-            } label: {
-                Image(systemName: "rectangle.portrait.and.arrow.right")
-            }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                isShowingMembersSheet = true
+                viewModel.prepareMembersViewModel(currentUserId: router.currentUserId)
+                viewModel.isShowingMembersSheet = true
             } label: {
                 Image(systemName: "person.2.badge.plus")
             }

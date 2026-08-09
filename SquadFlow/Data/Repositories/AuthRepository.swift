@@ -36,4 +36,8 @@ final class AuthRepository: AuthRepositoryProtocol {
             continuation.onTermination = { _ in task.cancel() }
         }
     }
+
+    func currentUserId() async -> UUID? {
+        try? await client.auth.session.user.id
+    }
 }

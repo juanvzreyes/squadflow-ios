@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AppRouter.self) private var router
     @Bindable var viewModel: ProfileViewModel
+    @State private var formViewModel = ProfileFormViewModel()
 
     var body: some View {
         NavigationStack {
@@ -18,7 +19,9 @@ struct ProfileView: View {
                 .toolbar { toolbarContent }
                 .task { await viewModel.fetchProfile() }
                 .sheet(isPresented: $viewModel.isShowingEditForm) {
-                    ProfileFormView(viewModel: viewModel)
+                    ProfileFormView(formViewModel: formViewModel) {
+                        await viewModel.updateProfile(using: formViewModel)
+                    }
                 }
                 .alert(
                     "Error",
@@ -79,6 +82,7 @@ struct ProfileView: View {
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
+                formViewModel.prepare(with: viewModel.profile)
                 viewModel.isShowingEditForm = true
             } label: {
                 Image(systemName: "pencil")

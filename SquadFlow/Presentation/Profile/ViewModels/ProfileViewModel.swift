@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 @MainActor
 @Observable
@@ -15,13 +14,6 @@ final class ProfileViewModel {
     var isLoading = false
     var errorMessage: String?
     var isShowingEditForm = false
-
-    var editUsername: String = ""
-    var editFullName: String = ""
-    var isSaving = false
-
-    var editAvatarImage: AvatarImage?
-    var avatarRemoved = false
 
     private let fetchCurrentProfileUseCase: FetchCurrentProfileUseCase
     private let updateProfileUseCase: UpdateProfileUseCase
@@ -47,31 +39,15 @@ final class ProfileViewModel {
         isLoading = false
     }
 
-    func prepareEditForm() {
-        editUsername = profile?.username ?? ""
-        editFullName = profile?.fullName ?? ""
-        editAvatarImage = nil
-        avatarRemoved = false
-    }
-
-    func updateProfile() async {
-        isSaving = true
+    func updateProfile(using formViewModel: ProfileFormViewModel) async {
+        formViewModel.isSaving = true
         errorMessage = nil
-
-        let avatarAction: AvatarAction
-        if avatarRemoved {
-            avatarAction = .remove
-        } else if let data = editAvatarImage?.data {
-            avatarAction = .update(data)
-        } else {
-            avatarAction = .keep
-        }
 
         do {
             profile = try await updateProfileUseCase.execute(
-                username: editUsername,
-                fullName: editFullName,
-                avatarAction: avatarAction,
+                username: formViewModel.username,
+                fullName: formViewModel.fullName,
+                avatarAction: formViewModel.buildAvatarAction(),
                 currentAvatarUrl: profile?.avatarUrl
             )
             isShowingEditForm = false
@@ -79,6 +55,6 @@ final class ProfileViewModel {
             errorMessage = error.localizedDescription
         }
 
-        isSaving = false
+        formViewModel.isSaving = false
     }
 }
