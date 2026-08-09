@@ -10,7 +10,9 @@ import Foundation
 struct TaskDisplayInfo {
     let task: TaskItem
     let assigneeName: String
+    let assigneeAvatarUrl: String?
     let creatorName: String
+    let creatorAvatarUrl: String?
 }
 
 enum TaskDisplayMapper {
@@ -20,22 +22,24 @@ enum TaskDisplayMapper {
         )
 
         return tasks.map { task in
-            let assigneeName =
-                task.assignedTo
-                .flatMap { memberLookup[$0] }
+            let assignee = task.assignedTo.flatMap { memberLookup[$0] }
+            let assigneeName = assignee
                 .flatMap { $0.username ?? $0.fullName }
                 ?? "Sin asignar"
+            let assigneeAvatarUrl = assignee?.avatarUrl
 
-            let creatorName =
-                task.createdBy
-                .flatMap { memberLookup[$0] }
+            let creator = task.createdBy.flatMap { memberLookup[$0] }
+            let creatorName = creator
                 .flatMap { $0.username ?? $0.fullName }
                 ?? "Desconocido"
+            let creatorAvatarUrl = creator?.avatarUrl
 
             return TaskDisplayInfo(
                 task: task,
                 assigneeName: assigneeName,
-                creatorName: creatorName
+                assigneeAvatarUrl: assigneeAvatarUrl,
+                creatorName: creatorName,
+                creatorAvatarUrl: creatorAvatarUrl
             )
         }
     }
