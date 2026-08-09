@@ -39,7 +39,7 @@ struct TaskRowView: View {
                         .foregroundStyle(.tertiary)
 
                     HStack(spacing: 4) {
-                        Image(systemName: "person.crop.circle.fill")
+                        AvatarCircleView(avatarUrl: displayInfo.assigneeAvatarUrl, size: 20)
                         Text(displayInfo.assigneeName)
                     }
                     .font(.caption)
@@ -73,7 +73,9 @@ struct TaskRowView: View {
                     createdAt: .now
                 ),
                 assigneeName: "Sin asignar",
-                creatorName: "Desconocido"
+                assigneeAvatarUrl: nil,
+                creatorName: "Desconocido",
+                creatorAvatarUrl: nil
             )
         ) {
         } onDelete: {

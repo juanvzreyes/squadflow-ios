@@ -83,11 +83,7 @@ struct WorkspaceMembersView: View {
                             searchText = ""
                         }
                     } label: {
-                        ProfileRowView(
-                            profile: profile,
-                            iconName: "person.badge.plus",
-                            iconColor: .blue
-                        ) {
+                        ProfileRowView(profile: profile) {
                             Text("Agregar")
                                 .font(.subheadline)
                                 .foregroundStyle(.blue)
@@ -106,11 +102,7 @@ struct WorkspaceMembersView: View {
     private var membersSection: some View {
         Section("Miembros actuales (\(viewModel.members.count))") {
             ForEach(viewModel.members) { member in
-                ProfileRowView(
-                    profile: member,
-                    iconName: "person.crop.circle.fill",
-                    iconColor: .secondary
-                ) {
+                ProfileRowView(profile: member) {
                     EmptyView()
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
