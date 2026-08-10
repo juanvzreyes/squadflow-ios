@@ -18,10 +18,12 @@ final class AuthViewModel {
 
     private let signInUseCase: SignInUseCase
     private let signUpUseCase: SignUpUseCase
+    private let signInWithGoogleUseCase: SignInWithGoogleUseCase
 
     init(repository: AuthRepositoryProtocol) {
         self.signInUseCase = SignInUseCase(repository: repository)
         self.signUpUseCase = SignUpUseCase(repository: repository)
+        self.signInWithGoogleUseCase = SignInWithGoogleUseCase(repository: repository)
     }
 
     var isFormValid: Bool {
@@ -51,6 +53,19 @@ final class AuthViewModel {
 
         do {
             try await signUpUseCase.execute(email: email, password: password)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    func signInWithGoogle() async {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            try await signInWithGoogleUseCase.execute()
         } catch {
             errorMessage = error.localizedDescription
         }
