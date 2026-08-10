@@ -94,20 +94,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		DA90B96B300EA5C300F6E501 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		DAFBF9CC3005B5EC0043463D = {
 			isa = PBXGroup;
 			children = (
 				DAFBF9D73005B5EC0043463D /* SquadFlow */,
 				DAFBF9E53005B5ED0043463D /* SquadFlowTests */,
 				DAFBF9EF3005B5ED0043463D /* SquadFlowUITests */,
-				DA90B96B300EA5C300F6E501 /* Frameworks */,
 				DAFBF9D63005B5EC0043463D /* Products */,
 			);
 			sourceTree = "<group>";
