@@ -9,15 +9,11 @@ import SwiftUI
 
 struct ProfileRowView<TrailingContent: View>: View {
     let profile: Profile
-    let iconName: String
-    let iconColor: Color
     @ViewBuilder let trailingContent: TrailingContent
 
     var body: some View {
         HStack {
-            Image(systemName: iconName)
-                .font(.title3)
-                .foregroundStyle(iconColor)
+            AvatarCircleView(avatarUrl: profile.avatarUrl, size: 38)
 
             VStack(alignment: .leading) {
                 Text(profile.username ?? "Sin usuario")
@@ -46,9 +42,7 @@ struct ProfileRowView<TrailingContent: View>: View {
             fullName: "Juan Adolfo Velazquez Reyes",
             avatarUrl: nil,
             updatedAt: nil
-        ),
-        iconName: "person.crop.circle.fill",
-        iconColor: .secondary
+        )
     ) {
         EmptyView()
     }

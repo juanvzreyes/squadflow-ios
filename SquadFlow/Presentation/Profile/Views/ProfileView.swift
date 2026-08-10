@@ -42,10 +42,7 @@ struct ProfileView: View {
             List {
                 Section {
                     HStack(spacing: 14) {
-                        AvatarCircleView(
-                            avatarUrl: profile.avatarUrl,
-                            size: 56
-                        )
+                        AvatarCircleView(avatarUrl: profile.avatarUrl)
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text(profile.fullName ?? "")
