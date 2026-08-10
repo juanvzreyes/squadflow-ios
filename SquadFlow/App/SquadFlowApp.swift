@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 @main
 struct SquadFlowApp: App {
@@ -24,6 +25,9 @@ struct SquadFlowApp: App {
             RootView()
                 .environment(router)
                 .environment(container)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }
