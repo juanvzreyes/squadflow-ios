@@ -5,6 +5,7 @@
 //  Created by Juan Adolfo Velazquez Reyes on 20/07/26.
 //
 
+import GoogleSignInSwift
 import SwiftUI
 
 struct AuthView: View {
@@ -85,6 +86,19 @@ struct AuthView: View {
             }
             .font(.subheadline)
             .buttonStyle(.plain)
+
+            GoogleSignInButton(
+                viewModel: GoogleSignInButtonViewModel(
+                    scheme: .light,
+                    style: .standard,
+                    state: viewModel.isLoading ? .disabled : .normal
+                )
+            ) {
+                Task { await viewModel.signInWithGoogle() }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .disabled(viewModel.isLoading)
         }
     }
 }
