@@ -7,6 +7,8 @@
 
 import Foundation
 import Supabase
+import GoogleSignIn
+import UIKit
 
 final class AuthRepository: AuthRepositoryProtocol {
     private let client = SupabaseManager.shared.client
@@ -19,8 +21,34 @@ final class AuthRepository: AuthRepositoryProtocol {
         _ = try await client.auth.signIn(email: email, password: password)
     }
 
+    func signInWithGoogle() async throws {
+        guard let rootViewController = rootViewController() else {
+            throw AuthError.missingRootViewController
+        }
+
+        let config = GIDConfiguration(
+            clientID: Secrets.googleClientID,
+            serverClientID: Secrets.googleServerClientID
+        )
+        GIDSignIn.sharedInstance.configuration = config
+
+        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
+        guard let idToken = result.user.idToken?.tokenString else {
+            throw AuthError.missingGoogleToken
+        }
+
+        try await client.auth.signInWithIdToken(
+            credentials: OpenIDConnectCredentials(
+                provider: .google,
+                idToken: idToken,
+                accessToken: result.user.accessToken.tokenString
+            )
+        )
+    }
+
     func signOut() async throws {
         try await client.auth.signOut()
+        GIDSignIn.sharedInstance.signOut()
     }
 
     func authStateStream() -> AsyncStream<Bool> {
@@ -39,5 +67,16 @@ final class AuthRepository: AuthRepositoryProtocol {
 
     func currentUserId() async -> UUID? {
         try? await client.auth.session.user.id
+    }
+
+    // MARK: - Private helpers
+
+    @MainActor
+    private func rootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }?
+            .rootViewController
     }
 }
