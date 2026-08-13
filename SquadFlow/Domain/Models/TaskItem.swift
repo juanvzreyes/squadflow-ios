@@ -5,8 +5,15 @@
 //  Created by Juan Adolfo Velazquez Reyes on 20/07/26.
 //
 
+import CoreTransferable
 import Foundation
 import SwiftUI
+import UniformTypeIdentifiers
+
+extension UTType {
+    static let taskItem = UTType(exportedAs: "com.squadflow.taskitem")
+}
+
 
 enum TaskStatus: String, Codable, CaseIterable {
     case todo = "todo"
@@ -33,7 +40,7 @@ enum TaskStatus: String, Codable, CaseIterable {
     }
 }
 
-struct TaskItem: Codable, Identifiable {
+struct TaskItem: Codable, Identifiable, Hashable, Transferable {
     let id: UUID
     let workspaceId: UUID
     let title: String
@@ -52,5 +59,9 @@ struct TaskItem: Codable, Identifiable {
         case assignedTo = "assigned_to"
         case createdBy = "created_by"
         case createdAt = "created_at"
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        ProxyRepresentation(exporting: \.id.uuidString)
     }
 }
