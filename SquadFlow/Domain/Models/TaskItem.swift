@@ -14,6 +14,24 @@ extension UTType {
     static let taskItem = UTType(exportedAs: "com.squadflow.taskitem")
 }
 
+enum TaskViewMode: String, CaseIterable {
+    case list
+    case kanban
+
+    var label: String {
+        switch self {
+        case .list: "Lista"
+        case .kanban: "Kanban"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .list: "list.bullet"
+        case .kanban: "rectangle.split.3x1"
+        }
+    }
+}
 
 enum TaskStatus: String, Codable, CaseIterable {
     case todo = "todo"
