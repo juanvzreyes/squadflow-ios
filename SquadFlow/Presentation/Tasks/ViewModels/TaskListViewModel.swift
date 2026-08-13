@@ -19,6 +19,13 @@ final class TaskListViewModel {
     var isShowingCreateForm = false
     var taskToEdit: TaskItem?
     var isShowingMembersSheet = false
+    var viewMode: TaskViewMode = .list
+
+    // MARK: - Kanban Helpers
+
+    var tasksByStatus: [TaskStatus: [TaskDisplayInfo]] {
+        Dictionary(grouping: displayItems, by: { $0.task.status })
+    }
     let workspaceId: UUID
 
     // MARK: - Sub-ViewModels (owned)
@@ -123,6 +130,30 @@ final class TaskListViewModel {
             refreshDisplayItems()
         } catch {
             errorMessage = "Error al eliminar: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Kanban Status Update
+
+    func updateTaskStatus(taskId: UUID, newStatus: TaskStatus) async {
+        guard let task = tasks.first(where: { $0.id == taskId }),
+            task.status != newStatus
+        else { return }
+        do {
+            let updatedTask = try await updateTaskUseCase.execute(
+                taskId: taskId,
+                title: task.title,
+                description: task.description,
+                status: newStatus,
+                assignedTo: task.assignedTo
+            )
+            if let index = tasks.firstIndex(where: { $0.id == taskId }) {
+                tasks[index] = updatedTask
+            }
+            refreshDisplayItems()
+        } catch {
+            errorMessage =
+                "Error al cambiar estado: \(error.localizedDescription)"
         }
     }
 

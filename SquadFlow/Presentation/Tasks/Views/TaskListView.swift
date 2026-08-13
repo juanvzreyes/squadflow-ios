@@ -88,18 +88,44 @@ struct TaskListView: View {
         } else if viewModel.tasks.isEmpty {
             EmptyStateView()
         } else {
-            TaskListContent(
-                displayItems: viewModel.displayItems,
-                onTap: { viewModel.taskToEdit = $0 },
-                onDelete: { task in
-                    Task { await viewModel.deleteTask(task: task) }
-                }
-            )
+            switch viewModel.viewMode {
+            case .list:
+                TaskListContent(
+                    displayItems: viewModel.displayItems,
+                    onTap: { viewModel.taskToEdit = $0 },
+                    onDelete: { task in
+                        Task { await viewModel.deleteTask(task: task) }
+                    }
+                )
+            case .kanban:
+                KanbanBoardView(
+                    tasksByStatus: viewModel.tasksByStatus,
+                    onTap: { viewModel.taskToEdit = $0 },
+                    onStatusChange: { taskId, newStatus in
+                        Task {
+                            await viewModel.updateTaskStatus(
+                                taskId: taskId,
+                                newStatus: newStatus
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Picker("Vista", selection: $viewModel.viewMode) {
+                ForEach(TaskViewMode.allCases, id: \.self) { mode in
+                    Label(mode.label, systemImage: mode.icon)
+                        .tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
+        }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 viewModel.prepareMembersViewModel(currentUserId: router.currentUserId)
